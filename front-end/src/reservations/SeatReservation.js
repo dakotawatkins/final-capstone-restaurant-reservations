@@ -33,21 +33,6 @@ export default function SeatReservation({ tables, loadDashboard }) {
     setTableId(target.value);
   }
 
-  /**
-   * makes a put request to update the form upon the user's submission
-   */
-  function handleSubmit(event) {
-    event.preventDefault();
-    const abortController = new AbortController();
-
-    if (validateSeat()) {
-      seatTable(reservation_id, table_id, abortController.signal)
-        .then(loadDashboard)
-        .then(() => history.push(`/dashboard`))
-        .catch(setApiError);
-    }
-    return () => abortController.abort();
-  }
 
   /** checks that the seat can host the user's reservation */
   function validateSeat() {
@@ -66,7 +51,8 @@ export default function SeatReservation({ tables, loadDashboard }) {
       foundErrors.push("invalid table: table does not exist");
     } else if (!foundReservation) {
       foundErrors.push("invalid reservation: reservation does not exist");
-    } else {
+    } 
+    else {
       if (foundTable.status === "occupied") {
         foundErrors.push("invalid table: the table is occupied");
       }
@@ -82,6 +68,28 @@ export default function SeatReservation({ tables, loadDashboard }) {
     return foundErrors.length === 0;
   }
 
+
+  /**
+   * makes a put request to update the form upon the user's submission
+   */
+  function handleSubmit(event) {
+    event.preventDefault();
+    const abortController = new AbortController();
+    console.log(setErrors[1])
+    if (!validateSeat()) {
+      throw new Error(setErrors[1])
+    }
+    if (validateSeat()) {
+      seatTable(reservation_id, table_id, abortController.signal)
+        .then(loadDashboard)
+        .then(() => history.push(`/dashboard`))
+        .catch(setErrors)
+        .catch(setApiError);
+    }
+    return () => abortController.abort();
+  }
+
+
   const tableOptionsJSX = () => {
     return tables.map((table) => (
       <option key={table.table_id} value={table.table_id}>
@@ -90,9 +98,11 @@ export default function SeatReservation({ tables, loadDashboard }) {
     ));
   };
 
+
   const errorsJSX = () => {
-    return errors.map((error, idx) => <ErrorAlert key={idx} error={error} />);
+    return errors.map((error, index) => <ErrorAlert key={index.toString()} error={error} />);
   };
+
 
   return (
     <form className="form-select" style={{fontFamily: "Rubik"}}>
