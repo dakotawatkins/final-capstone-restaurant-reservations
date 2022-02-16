@@ -35,8 +35,8 @@ export default function SeatReservation({ tables, loadDashboard }) {
 
 
   /** checks that the seat can host the user's reservation */
-  function validateSeat() {
-    const foundErrors = [];
+  function validateSeat(foundErrors) {
+    // const foundErrors = [];
 
     /** checks for table that matches the given table_id */
     const foundTable = tables.find(
@@ -48,23 +48,29 @@ export default function SeatReservation({ tables, loadDashboard }) {
     );
 
     if (!foundTable) {
-      foundErrors.push("invalid table: table does not exist");
+      foundErrors.push({
+        message: "invalid table: table does not exist",
+      });
     } else if (!foundReservation) {
-      foundErrors.push("invalid reservation: reservation does not exist");
+      foundErrors.push({
+        message: "invalid reservation: reservation does not exist",
+      });
     } 
     else {
       if (foundTable.status === "occupied") {
-        foundErrors.push("invalid table: the table is occupied");
+        foundErrors.push({
+          message: "invalid table: the table is occupied",
+        });
       }
 
       if (foundTable.capacity < foundReservation.people) {
-        foundErrors.push(
-          `invalid table: table cannot seat ${foundReservation.people} people.`
-        );
+        foundErrors.push({
+          message: `invalid table: table cannot seat ${foundReservation.people} people.`,
+        });
       }
     }
 
-    setErrors(foundErrors);
+    // setErrors(foundErrors);
     return foundErrors.length === 0;
   }
 
@@ -75,17 +81,15 @@ export default function SeatReservation({ tables, loadDashboard }) {
   function handleSubmit(event) {
     event.preventDefault();
     const abortController = new AbortController();
-    console.log(setErrors[1])
-    if (!validateSeat()) {
-      throw new Error(setErrors[1])
-    }
-    if (validateSeat()) {
+    const foundErrors = [];
+    console.log(validateSeat(foundErrors))
+    
+    // if (validateSeat(foundErrors)) {
       seatTable(reservation_id, table_id, abortController.signal)
         .then(loadDashboard)
         .then(() => history.push(`/dashboard`))
-        .catch(setErrors)
         .catch(setApiError);
-    }
+    // }
     return () => abortController.abort();
   }
 
@@ -100,6 +104,9 @@ export default function SeatReservation({ tables, loadDashboard }) {
 
 
   const errorsJSX = () => {
+    // return <h1> you have an error {errors} </h1>
+      // return <div className="alert alert-danger m-2">Error: {errors}</div>
+    // return errors.map((error, index) => <ErrorAlert key={index.toString()} error={error} />);
     return errors.map((error, index) => <ErrorAlert key={index.toString()} error={error} />);
   };
 
