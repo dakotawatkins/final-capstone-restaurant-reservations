@@ -1,150 +1,96 @@
-import React, { useState, useEffect } from "react";
-import { useHistory, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useHistory, useParams } from "react-router";
 import ErrorAlert from "../layout/ErrorAlert";
-import { listReservations, seatTable } from "../utils/api";
+import { listTables, readReservation, seatResAtTable } from "../utils/api";
 
-
-export default function SeatReservation({ tables, loadDashboard }) {
+export default function SeatReservation({
+  tables,
+  reservations,
+  setTables,
+  setReservations,
+}) {
+  const initialState = { table_id: 0 };
+  const [formData, setFormData] = useState(initialState);
+  const [singleRes, setSingleRes] = useState(initialState);
+  const [error, setError] = useState(null);
+  const { reservation_id } = useParams();
   const history = useHistory();
 
-  const [table_id, setTableId] = useState(0);
-  const [reservations, setReservations] = useState([]);
-  const [reservationsError, setReservationsError] = useState(null);
-  const [errors, setErrors] = useState([]);
-  const [apiError, setApiError] = useState(null);
-
-  const { reservation_id } = useParams();
-
-  /** makes a get request to list all reservations to the user */
   useEffect(() => {
     const abortController = new AbortController();
-    setReservationsError(null);
-    listReservations(null, abortController.signal)
-      .then(setReservations)
-      .catch(setReservationsError);
 
-    return () => abortController.abort();
-  }, []);
+    readReservation(reservation_id).then(setSingleRes).catch(setError);
 
-  if (!tables || !reservations) return null;
+    listTables().then(setTables).catch(setError);
 
-  /** updates the state of the form upon any changes made by the user */
-  function handleChange({ target }) {
-    setTableId(target.value);
-  }
+    return abortController.abort();
+  }, [reservation_id, setTables]);
 
-
-  /** checks that the seat can host the user's reservation */
-  function validateSeat(foundErrors) {
-    // const foundErrors = [];
-
-    /** checks for table that matches the given table_id */
-    const foundTable = tables.find(
-      (table) => table.table_id === Number(table_id)
-    );
-    /** checks for reservation that matches the given reservation_id */
-    const foundReservation = reservations.find(
-      (reservation) => reservation.reservation_id === Number(reservation_id)
-    );
-
-    if (!foundTable) {
-      foundErrors.push({
-        message: "invalid table: table does not exist",
-      });
-    } else if (!foundReservation) {
-      foundErrors.push({
-        message: "invalid reservation: reservation does not exist",
-      });
-    } 
-    else {
-      if (foundTable.status === "occupied") {
-        foundErrors.push({
-          message: "invalid table: the table is occupied",
-        });
-      }
-
-      if (foundTable.capacity < foundReservation.people) {
-        foundErrors.push({
-          message: `invalid table: table cannot seat ${foundReservation.people} people.`,
-        });
-      }
-    }
-
-    // setErrors(foundErrors);
-    return foundErrors.length === 0;
-  }
-
-
-  /**
-   * makes a put request to update the form upon the user's submission
-   */
-  function handleSubmit(event) {
+  let handleSubmit = (event) => {
     event.preventDefault();
     const abortController = new AbortController();
-    const foundErrors = [];
-    console.log(validateSeat(foundErrors))
-    
-    // if (validateSeat(foundErrors)) {
-      seatTable(reservation_id, table_id, abortController.signal)
-        .then(loadDashboard)
-        .then(() => history.push(`/dashboard`))
-        .catch(setApiError);
-    // }
+    if (formData.table_id > 0) {
+      seatResAtTable(formData.table_id, reservation_id)
+        .then(() =>
+          history.push(`/dashboard?date=${singleRes.reservation_date}`)
+        )
+        .catch(setError);
+    } else {
+      setError({ message: "Not a valid table" });
+    }
     return () => abortController.abort();
-  }
-
-
-  const tableOptionsJSX = () => {
-    return tables.map((table) => (
-      <option key={table.table_id} value={table.table_id}>
-        {table.table_name} - {table.capacity}
-      </option>
-    ));
   };
 
-
-  const errorsJSX = () => {
-    // return <h1> you have an error {errors} </h1>
-      // return <div className="alert alert-danger m-2">Error: {errors}</div>
-    // return errors.map((error, index) => <ErrorAlert key={index.toString()} error={error} />);
-    return errors.map((error, index) => <ErrorAlert key={index.toString()} error={error} />);
+  const handleChange = ({ target }) => {
+    setFormData({
+      ...formData,
+      [target.name]: target.value,
+    });
   };
 
+  const tableMenu = tables ? (
+    tables.map((table) => {
+      if (table.reservation_id === null && singleRes.people <= table.capacity) {
+        return (
+          <option
+            name={table.table_id}
+            value={table.table_id}
+            key={table.table_id}
+          >
+            {table.table_name} - {table.capacity}
+          </option>
+        );
+      } else return "";
+    })
+  ) : (
+    <option defaultValue>No available tables</option>
+  );
 
   return (
-    <form className="form-select" style={{fontFamily: "Rubik"}}>
-      {errorsJSX()}
-      <ErrorAlert error={apiError} />
-      <ErrorAlert error={reservationsError} />
-
-      <label className="form-label" htmlFor="table_id">
-        Choose table:
-      </label>
-      <select
-        className="form-control"
-        name="table_id"
-        id="table_id"
-        value={table_id}
-        onChange={handleChange}
-      >
-        <option value={0}>Choose a table</option>
-        {tableOptionsJSX()}
-      </select>
-
-      <button
-        className="btn btn-outline-light m-1"
-        type="submit"
-        onClick={handleSubmit}
-      >
-        Submit
-      </button>
-      <button
-        className="btn btn-outline-light m-1"
-        type="button"
-        onClick={history.goBack}
-      >
-        Cancel
-      </button>
-    </form>
+    <div>
+      <h2>Seat Reservation</h2>
+      <ErrorAlert error={error} />
+      <form onSubmit={handleSubmit}>
+        <label className="form-label" htmlFor="table_id">
+          Select Table:&nbsp;
+        </label>
+        <select className="form-select" name="table_id" onChange={handleChange}>
+          <option defaultValue={0}>Please choose table:</option>
+          {tableMenu}
+        </select>
+        <button className="btn btn-primary" type="submit">
+          Submit
+        </button>
+        <button
+          className="btn btn-secondary"
+          onClick={(e) => {
+            e.preventDefault();
+            history.goBack();
+          }}
+        >
+          Cancel
+        </button>
+      </form>
+    </div>
   );
 }

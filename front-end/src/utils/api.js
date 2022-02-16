@@ -2,12 +2,11 @@
  * Defines the base URL for the API.
  * The default values is overridden by the `API_BASE_URL` environment variable.
  */
-// import formatReservationDate from "./format-reservation-date";
-// import formatReservationTime from "./format-reservation-time";
+import formatReservationDate from "./format-reservation-date";
+import formatReservationTime from "./format-reservation-time";
 
 const API_BASE_URL =
-  // process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
-  process.env.REACT_APP_API_BASE_URL || "https://reilly-backend.herokuapp.com";
+  process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
 
 /**
  * Defines the default headers for these functions to work with `json-server`
@@ -93,6 +92,25 @@ export async function createTable(table, signal) {
   return await fetchJson(url, { headers, signal, method: "POST", body }, []);
 }
 
+
+/**
+ * Retrieves the reservation with the specified `reservationId`
+ * @param reservationId
+ *  the id of the target
+ * @param signal
+ *  optional AbortController.signal
+ * @returns {Promise<Error|*>}
+ *  a promise that resolves to the saved reservation.
+ */
+ export async function readReservation(reservationId, signal) {
+  console.log(reservationId);
+  const url = `${API_BASE_URL}/reservations/${reservationId}`;
+  return await fetchJson(url, { signal })
+    .then(formatReservationDate)
+    .then(formatReservationTime);
+}
+
+
 /** returns updated data to a given reservation's page */
 export async function editReservation(reservation_id, reservation, signal) {
   const url = `${API_BASE_URL}/reservations/${reservation_id}`;
@@ -107,6 +125,31 @@ export async function updateReservationStatus(reservation_id, status, signal) {
   return await fetchJson(url, { headers, signal, method: "PUT", body }, []);
 }
 
+/**
+ * Updates the status of a reservation
+ * @param reservation_id
+ *  the id of the reservation to update
+ * @param data
+ *  the new status
+ * @param signal
+ * optional AbortController.signal
+ * @returns {Promise<Error|*>}
+ *  a promise that resolves to the updated reservation.
+ */
+
+ export async function changeReservationStatus(reservation_id, data, signal) {
+  const url = `${API_BASE_URL}/reservations/${reservation_id}/status`;
+  const options = {
+    method: "PUT",
+    headers,
+    body: JSON.stringify({ data: { status: data } }),
+    signal,
+  };
+  return await fetchJson(url, options, {})
+    .then(formatReservationDate)
+    .then(formatReservationTime);
+}
+
 /** removes a table for the seat page */
 export async function finishTable(table_id, signal) {
   const url = `${API_BASE_URL}/tables/${table_id}/seat`;
@@ -118,4 +161,34 @@ export async function seatTable(reservation_id, table_id, signal) {
   const url = `${API_BASE_URL}/tables/${table_id}/seat`;
   const body = JSON.stringify({ data: { reservation_id: reservation_id } });
   return await fetchJson(url, { headers, signal, method: "PUT", body }, []);
+}
+
+export async function seatResAtTable(table_id, data) {
+  const url = `${API_BASE_URL}/tables/${table_id}/seat`;
+  const options = {
+    method: "PUT",
+    headers,
+    body: JSON.stringify({ data: { reservation_id: data } }),
+  };
+  return await fetchJson(url, options, {});
+}
+
+/**
+ * Updates a existing reservation
+ *  @param data
+ *  the information of the reservation to update, which must have an `id` property
+ * @returns {Promise<[signal]>}
+ *  a promise that resolves to the updated reservation.
+ */
+ export async function updateReservation(data, signal) {
+  const url = `${API_BASE_URL}/reservations/${data.reservation_id}`;
+  const options = {
+    method: "PUT",
+    headers,
+    body: JSON.stringify({ data }),
+    signal,
+  };
+  return await fetchJson(url, options)
+    .then(formatReservationDate)
+    .then(formatReservationTime);
 }

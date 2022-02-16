@@ -64,7 +64,7 @@ export default function NewTable({ loadDashboard }) {
 
 
   return (
-    <div style={{ fontFamily: "'Ubuntu', sans-serif", height: "100vh" }}>
+    <div >
       <h2 className="font-weight-bold d-flex justify-content-center mt-4">
         New Table
       </h2>
