@@ -154,7 +154,7 @@ export async function updateReservationStatus(reservation_id, status, signal) {
 /** removes a table for the seat page */
 export async function finishTable(table_id, signal) {
   const url = `${API_BASE_URL}/tables/${table_id}/seat`;
-  return await fetchJson(url, { headers, signal, method: "DELETE" }, []);
+  return await fetchJson(url, { headers, signal, method: "DELETE" });
 }
 
 /** updates the table status and displays it in the tables list */

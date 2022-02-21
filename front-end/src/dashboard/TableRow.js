@@ -16,7 +16,9 @@ export default function TableRow({ table, loadDashboard }) {
       )
     ) {
       const abortController = new AbortController();
-      finishTable(table.table_id, abortController.signal).then(loadDashboard);
+      finishTable(table.table_id, abortController.signal)
+        .then(loadDashboard)
+        .then(() => window.location.reload())
       return () => abortController.abort();
     }
   }

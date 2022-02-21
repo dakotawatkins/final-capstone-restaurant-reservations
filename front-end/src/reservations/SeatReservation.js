@@ -71,18 +71,22 @@ export default function SeatReservation({
       <h2>Seat Reservation</h2>
       <ErrorAlert error={error} />
       <form onSubmit={handleSubmit}>
+        
         <label className="form-label" htmlFor="table_id">
           Select Table:&nbsp;
         </label>
+        
         <select className="form-select" name="table_id" onChange={handleChange}>
           <option defaultValue={0}>Please choose table:</option>
           {tableMenu}
         </select>
-        <button className="btn btn-primary" type="submit">
+        
+        <button className="btn btn-outline-light m-1" type="submit">
           Submit
         </button>
+        
         <button
-          className="btn btn-secondary"
+          className="btn btn-outline-light m-1"
           onClick={(e) => {
             e.preventDefault();
             history.goBack();
@@ -90,6 +94,7 @@ export default function SeatReservation({
         >
           Cancel
         </button>
+
       </form>
     </div>
   );

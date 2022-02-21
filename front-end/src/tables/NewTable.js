@@ -12,7 +12,7 @@ export default function NewTable({ loadDashboard }) {
   /** sets initial state of a table */
   const [formData, setFormData] = useState({
     table_name: "",
-    capacity: 1,
+    capacity: "",
   });
 
 
