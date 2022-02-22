@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useHistory, useParams } from "react-router";
 import ErrorAlert from "../layout/ErrorAlert";
-import { listTables, readReservation, seatResAtTable } from "../utils/api";
+import { listTables, readReservation, seatReservation } from "../utils/api";
 
 export default function SeatReservation({
   tables,
@@ -30,7 +30,7 @@ export default function SeatReservation({
     event.preventDefault();
     const abortController = new AbortController();
     if (formData.table_id > 0) {
-      seatResAtTable(formData.table_id, reservation_id)
+      seatReservation(reservation_id, formData.table_id)
         .then(() =>
           history.push(`/dashboard?date=${singleRes.reservation_date}`)
         )

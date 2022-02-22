@@ -164,12 +164,21 @@ export async function seatTable(reservation_id, table_id, signal) {
   return await fetchJson(url, { headers, signal, method: "PUT", body }, []);
 }
 
-export async function seatResAtTable(table_id, data) {
+// export async function seatResAtTable(table_id, data) {
+//   const url = `${API_BASE_URL}/tables/${table_id}/seat`;
+//   const options = {
+//     method: "PUT",
+//     headers,
+//     body: JSON.stringify({ data: { reservation_id: data } }),
+//   };
+//   return await fetchJson(url, options, {});
+// }
+export async function seatReservation(reservation_id, table_id) {
   const url = `${API_BASE_URL}/tables/${table_id}/seat`;
   const options = {
     method: "PUT",
+    body: JSON.stringify({ data: { reservation_id } }),
     headers,
-    body: JSON.stringify({ data: { reservation_id: data } }),
   };
   return await fetchJson(url, options, {});
 }

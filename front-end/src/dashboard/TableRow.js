@@ -1,27 +1,37 @@
 import React from "react";
-import { finishTable } from "../utils/api";
+import { finishTable, listTables } from "../utils/api";
 
 
 /** a function to display an individual 'TableRow' with data (columns) shown below */
-export default function TableRow({ table, loadDashboard }) {
+export default function TableRow({ table }) {
   /** if no table or undefined, return nulll */
   if (!table) return null;
 
 
-  /** handles finishing a seated table */
-  function handleFinish() {
-    if (
-      window.confirm(
-        "Is this table ready to seat new guests? This cannot be undone."
-      )
-    ) {
-      const abortController = new AbortController();
-      finishTable(table.table_id, abortController.signal)
-        .then(loadDashboard)
+  // /** handles finishing a seated table */
+  // function handleFinish() {
+  //   if (
+  //     window.confirm(
+  //       "Is this table ready to seat new guests? This cannot be undone."
+  //     )
+  //   ) {
+  //     const abortController = new AbortController();
+  //     finishTable(table.table_id, abortController.signal)
+  //       // .then(loadDashboard)
+  //       .then(() => window.location.reload())
+  //     return () => abortController.abort();
+  //   }
+  // }
+  const handleFinish = (table_id) => {
+    const abortController = new AbortController();
+    let result = window.confirm(
+      "Is this table ready to seat new guests? \n This cannot be undone."
+    );
+    if (result)
+      finishTable(table_id, abortController.signal)
         .then(() => window.location.reload())
-      return () => abortController.abort();
-    }
-  }
+    return () => abortController.abort();
+  };
   
 
   /** displays a single table (row), which is mapped in tablesJSX() in Dashboard,
@@ -43,7 +53,10 @@ export default function TableRow({ table, loadDashboard }) {
           <button
             className="btn btn-sm btn-outline-light"
             data-table-id-finish={table.table_id}
-            onClick={handleFinish}
+            onClick={(e) => {
+              e.preventDefault();
+              handleFinish(table.table_id);
+            }}
             type="button"
           >
             Finish
