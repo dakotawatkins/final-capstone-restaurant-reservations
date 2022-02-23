@@ -1,8 +1,8 @@
 const fetch = require("cross-fetch");
 
 const API_BASE_URL =
-  // process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
-    process.env.REACT_APP_API_BASE_URL || "https://periodic-tables-backend-dw.herokuapp.com"
+  process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
+  // process.env.REACT_APP_API_BASE_URL || "https://periodic-tables-backend-dw.herokuapp.com"
 
 
 /**
