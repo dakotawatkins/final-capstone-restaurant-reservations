@@ -50,7 +50,7 @@ export default function SeatReservation({
 
   const tableMenu = tables ? (
     tables.map((table) => {
-      if (table.reservation_id === null && singleRes.people <= table.capacity) {
+      // if (table.reservation_id === null && singleRes.people <= table.capacity) {
         return (
           <option
             name={table.table_id}
@@ -60,7 +60,7 @@ export default function SeatReservation({
             {table.table_name} - {table.capacity}
           </option>
         );
-      } else return "";
+      // } else return "";
     })
   ) : (
     <option defaultValue>No available tables</option>
